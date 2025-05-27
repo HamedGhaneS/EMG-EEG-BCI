@@ -1,0 +1,682 @@
+"""
+Phase 0: Basic Continuous RDM Task - WITH CUSTOM DOT IMPLEMENTATION
+- Response pad input only (based on your Cedrus setup)
+- Continuous Random Dot Motion (seamless transitions)
+- Fixed fixation cross throughout
+- Simple response collection with confidence ratings
+- No EMG monitoring or evidence termination
+- Custom dot implementation - NO DIRECTION BUG!
+"""
+
+import random 
+import math
+from psychopy import visual, core, data, event, gui
+import pandas as pd
+import numpy as np
+from pathlib import Path
+import time
+
+try:
+    import pyxid2 as pyxid
+except ImportError:
+    import pyxid
+
+class MovingDot:
+    """Custom dot class for reliable motion control"""
+    def __init__(self, win, boundary_size, dot_radius, dot_color):
+        self.win = win
+        self.boundary_size = boundary_size
+        self.dot_radius = dot_radius
+        self.dot = visual.Circle(win, radius=dot_radius, fillColor=dot_color, lineColor=dot_color)
+        self.reset_position()
+        self.lifetime = random.randint(1, 10)  # 5-10 frames lifetime
+        
+    def reset_position(self):
+        """Reset dot to random position within circular boundary"""
+        # Random position within circle
+        angle = random.uniform(0, 2 * math.pi)
+        radius = random.uniform(0, self.boundary_size - self.dot_radius)
+        self.x = radius * math.cos(angle)
+        self.y = radius * math.sin(angle)
+        self.visible = True
+        
+    def update(self, dx, dy, is_coherent, motion_speed):
+        """Update dot position"""
+        self.lifetime -= 1
+        
+        # Replace dot if lifetime expired
+        if self.lifetime <= 0:
+            self.reset_position()
+            self.lifetime = random.randint(5, 10)
+            return
+            
+        if self.visible:
+            if is_coherent:
+                # Move in coherent direction
+                self.x += dx
+                self.y += dy
+            else:
+                # Move in random direction
+                random_angle = random.uniform(0, 2 * math.pi)
+                self.x += motion_speed * math.cos(random_angle)
+                self.y += motion_speed * math.sin(random_angle)
+            
+            # Check boundary - disappear if outside
+            if math.sqrt(self.x**2 + self.y**2) + self.dot_radius > self.boundary_size:
+                self.visible = False
+                    
+    def draw(self):
+        """Draw dot if visible"""
+        if self.visible:
+            self.dot.pos = (self.x, self.y)
+            self.dot.draw()
+
+class ContinuousRDMTask:
+    def __init__(self):
+        # ====================================================================
+        # EASY CONFIGURATION SECTION - MODIFY THESE VALUES AS NEEDED
+        # ====================================================================
+        
+        # EXPERIMENT SETTINGS
+        self.config = {
+            # Trial structure
+            'n_blocks': 3,                     # Number of blocks
+            'n_trials_per_block': 10,          # Trials per block
+            'high_coherence': 0.50,            # High coherence level (0.0 to 1.0)
+            'zero_coherence': 0.0,             # Low coherence level (usually 0.0)
+            
+            # Visual settings
+            'show_trial_info': True,           # Show "Block X, Trial Y" text (True/False)
+            'aperture_size': 0.2,              # Size of dot circle (0.1 to 0.8) - adjusted for custom dots
+            
+            # Colors (choose one preset or customize)
+            'color_preset': 'black_on_gray',   # Options: 'black_on_gray', 'white_on_gray', 'black_on_white'
+            
+            # Custom colors (only used if color_preset is 'custom')
+            'custom_background': [0, 0, 0],    # Background color [R, G, B] from -1 to 1
+            'custom_dots': 'white',            # Dot color: 'white', 'black', or [R, G, B]
+            'custom_fixation': 'red',          # Fixation color: 'white', 'black', 'red', or [R, G, B]
+        }
+        
+        # ====================================================================
+        # END OF EASY CONFIGURATION SECTION
+        # ====================================================================
+        
+        # Apply color preset
+        self.colors = self._setup_colors()
+        
+        # Task settings (advanced - usually don't need to change)
+        self.settings = {
+            # Trial timing
+            'iti_durations': [3, 6, 9],        # ITI options in seconds
+            'high_coherence_max': 1.5,         # Maximum high coherence duration
+            'confidence_timeout': 10.0,        # Confidence rating timeout
+            'response_timeout': 2.0,           # Time to wait for response after EMG
+            
+            # Custom dot parameters
+            'dot_radius': 0.001,               # Dot radius
+            'motion_speed': 0.008,             # Motion speed (units per frame)
+            'n_dots': 200,                     # Number of dots
+            'refresh_rate': 120,               # Hz - updated for your display
+        }
+        
+        # Task state tracking
+        self.current_trial = 0
+        self.current_block = 0
+        self.trial_data = []
+        self.in_coherent_phase = False
+        self.coherent_phase_start = None
+        
+        # Custom dots storage
+        self.dots = []
+        
+        # Setup Cedrus response pad
+        self.cedrus_box = None
+        try:
+            devices = pyxid.get_xid_devices()
+            if devices:
+                self.cedrus_box = devices[0]
+                self.cedrus_box.reset_rt_timer()
+                self.cedrus_box.clear_response_queue()
+                print("Cedrus device initialized successfully")
+            else:
+                print("No Cedrus devices found - will use keyboard as backup")
+        except Exception as e:
+            print(f"Error initializing Cedrus device: {e}")
+            print("Will use keyboard as backup")
+
+        # Setup paths
+        self.base_path = Path.cwd()
+        self.data_path = self.base_path / 'data'
+        self.data_path.mkdir(exist_ok=True)
+
+        # Button mapping (including confidence rating buttons)
+        self.button_map = {
+            0: 'left',      # Left motion direction
+            1: 'right',     # Right motion direction  
+            2: 'low_conf',  # Low confidence (1)
+            3: 'med_conf',  # Medium confidence (2)
+            4: 'high_conf', # High confidence (3)
+            5: 'continue',  # Yellow button
+            6: 'quit'       # Blue button
+        }
+
+    def _setup_colors(self):
+        """Setup colors based on preset or custom configuration"""
+        colors = {}
+        
+        if self.config['color_preset'] == 'black_on_gray':
+            colors['background'] = [-0.5, -0.5, -0.5]  # Gray
+            colors['dots'] = 'black'
+            colors['fixation'] = 'white'
+            colors['text'] = 'white'
+            
+        elif self.config['color_preset'] == 'white_on_gray':
+            colors['background'] = [-0.5, -0.5, -0.5]  # Gray
+            colors['dots'] = 'white'
+            colors['fixation'] = 'black'
+            colors['text'] = 'white'
+            
+        elif self.config['color_preset'] == 'black_on_white':
+            colors['background'] = [1, 1, 1]  # White
+            colors['dots'] = 'black'
+            colors['fixation'] = 'red'
+            colors['text'] = 'black'
+            
+        elif self.config['color_preset'] == 'custom':
+            colors['background'] = self.config['custom_background']
+            colors['dots'] = self.config['custom_dots']
+            colors['fixation'] = self.config['custom_fixation']
+            # Auto-select text color based on background brightness
+            bg_brightness = sum(self.config['custom_background']) / 3
+            colors['text'] = 'white' if bg_brightness < 0 else 'black'
+        
+        return colors
+
+    def get_participant_info(self):
+        """Get participant information"""
+        exp_info = {
+            'participant': '',
+            'session': '001',
+            'date_time': time.strftime("%Y%m%d-%H%M%S"),
+        }
+
+        dlg = gui.DlgFromDict(
+            dictionary=exp_info,
+            title='Continuous RDM Task Info - CUSTOM DOTS',
+            fixed=['date_time']
+        )
+
+        if dlg.OK:
+            return exp_info
+        else:
+            core.quit()
+
+    def setup_display(self):
+        """Initialize PsychoPy window and stimuli"""
+        self.win = visual.Window(
+            size=[1200, 800],
+            fullscr=False,          # Set to True for actual experiment
+            units='height',         # Using height units
+            color=self.colors['background'],  # Use configured background color
+            allowGUI=True
+        )
+
+        # Create custom dots
+        self.create_custom_dots()
+
+        # Fixed fixation cross with configured color
+        self.fixation = visual.Rect(
+            self.win,
+            width=5,
+            height=5,
+            units='pix',
+            fillColor=self.colors['fixation'],  # Use configured fixation color
+            lineColor=self.colors['fixation'],
+            pos=(0, 0)
+        )
+
+        # Other stimuli with configured colors
+        self.instruction_text = visual.TextStim(
+            self.win,
+            text='',
+            height=0.035,
+            wrapWidth=0.85,
+            color=self.colors['text'],  # Use configured text color
+            pos=(0, 0),
+            alignText='center'
+        )
+
+        # Simple confidence rating display
+        self.confidence_text = visual.TextStim(
+            self.win,
+            text='',
+            height=0.04,
+            color=self.colors['text'],  # Use configured text color
+            pos=(0, 0)
+        )
+
+    def create_custom_dots(self):
+        """Create custom dot objects - NO DIRECTION BUG!"""
+        self.dots = []
+        for _ in range(self.settings['n_dots']):
+            dot = MovingDot(
+                self.win, 
+                self.config['aperture_size'], 
+                self.settings['dot_radius'],
+                self.colors['dots']
+            )
+            self.dots.append(dot)
+        print(f"Created {len(self.dots)} custom dots")
+
+    def update_dots(self, coherence, direction_degrees):
+        """Update all dots with specified coherence and direction"""
+        # Calculate motion vector
+        direction_radians = math.radians(direction_degrees)
+        dx = self.settings['motion_speed'] * math.cos(direction_radians)
+        dy = self.settings['motion_speed'] * math.sin(direction_radians)
+        
+        # Determine which dots move coherently
+        num_coherent = int(len(self.dots) * coherence)
+        coherent_indices = set(random.sample(range(len(self.dots)), num_coherent))
+        
+        # Update each dot
+        for i, dot in enumerate(self.dots):
+            is_coherent = i in coherent_indices
+            dot.update(dx, dy, is_coherent, self.settings['motion_speed'])
+
+    def draw_dots(self):
+        """Draw all visible dots"""
+        for dot in self.dots:
+            dot.draw()
+
+    def show_instructions(self):
+        """Display task instructions"""
+        instructions = [
+            """Welcome to the Continuous Random Dot Motion Task!
+            
+This version uses CUSTOM DOT IMPLEMENTATION for reliable motion.
+
+You will see moving dots around a central white square.
+Keep your eyes focused on the white square at ALL times.
+
+Press YELLOW BUTTON to continue...""",
+
+            """Your task:
+            
+- Always look at the central white square (fixation point)
+- Dots will move around the square - some coherently LEFT or RIGHT
+- When you detect coherent motion, respond as quickly as possible:
+  • LEFT BUTTON for leftward motion
+  • RIGHT BUTTON for rightward motion
+- Don't move your eyes from the central square!
+
+Press YELLOW BUTTON to continue...""",
+
+            """Important details:
+            
+- Dots move continuously throughout the experiment
+- Sometimes motion will be random (incoherent)
+- Sometimes motion will be clearly LEFT or RIGHT (coherent)
+- Respond only when you see coherent motion
+- After responding, you'll rate your confidence (3-point scale)
+
+Press YELLOW BUTTON to start..."""
+        ]
+
+        for instruction in instructions:
+            self.instruction_text.text = instruction
+            self.instruction_text.draw()
+            # Do NOT draw fixation during instructions
+            self.win.flip()
+
+            # Wait for yellow button press
+            waiting = True
+            while waiting:
+                if self.cedrus_box:
+                    self.cedrus_box.poll_for_response()
+                    if self.cedrus_box.response_queue:
+                        response = self.cedrus_box.get_next_response()
+                        if response['pressed'] and response['key'] == 5:  # Yellow button
+                            waiting = False
+                        elif response['pressed'] and response['key'] == 6:  # Blue button (quit)
+                            self.cleanup()
+                            core.quit()
+                else:
+                    # Keyboard backup
+                    keys = event.getKeys(['space', 'escape'])
+                    if 'space' in keys:
+                        waiting = False
+                    elif 'escape' in keys:
+                        core.quit()
+                
+                core.wait(0.01)
+
+    def run_iti(self):
+        """Run inter-trial interval with incoherent motion (all dots random)"""
+        iti_duration = random.choice(self.settings['iti_durations'])
+        print(f"ITI duration: {iti_duration}s (0% coherence - all dots random)")
+        
+        self.in_coherent_phase = False
+        
+        iti_timer = core.Clock()
+        while iti_timer.getTime() < iti_duration:
+            # Update dots with zero coherence (all random)
+            self.update_dots(self.config['zero_coherence'], 0)
+            
+            # Draw everything
+            self.draw_dots()
+            self.fixation.draw()
+            self.win.flip()
+            
+            # Check for quit
+            if self.cedrus_box:
+                self.cedrus_box.poll_for_response()
+                if self.cedrus_box.response_queue:
+                    response = self.cedrus_box.get_next_response()
+                    if response['pressed'] and response['key'] == 6:  # Quit
+                        self.cleanup()
+                        core.quit()
+            
+            core.wait(1/self.settings['refresh_rate'])
+
+    def collect_confidence_rating(self, motion_direction):
+        """Collect confidence rating using Cedrus response pad (3-point scale)"""
+        print("Waiting for confidence rating (buttons 2, 3, or 4)...")
+        
+        confidence_rating = None
+        
+        # Show confidence rating prompt
+        confidence_prompt = """How confident are you in your decision?
+
+Button 2 = Low Confidence (1)
+Button 3 = Medium Confidence (2) 
+Button 4 = High Confidence (3)
+
+Press one of these buttons..."""
+        
+        self.confidence_text.text = confidence_prompt
+        
+        # Clear response queue
+        if self.cedrus_box:
+            self.cedrus_box.clear_response_queue()
+        
+        rating_timer = core.Clock()
+        waiting_for_rating = True
+        
+        while waiting_for_rating and rating_timer.getTime() < self.settings['confidence_timeout']:
+            # Continue showing dots with current motion during rating
+            self.update_dots(self.config['high_coherence'], motion_direction)
+            self.draw_dots()
+            self.fixation.draw()
+            self.confidence_text.draw()
+            self.win.flip()
+            
+            # Check for confidence rating responses
+            if self.cedrus_box:
+                self.cedrus_box.poll_for_response()
+                if self.cedrus_box.response_queue:
+                    response = self.cedrus_box.get_next_response()
+                    if response['pressed']:
+                        if response['key'] == 2:  # Low confidence
+                            confidence_rating = 1
+                            waiting_for_rating = False
+                            print("Confidence rating: 1 (Low)")
+                        elif response['key'] == 3:  # Medium confidence
+                            confidence_rating = 2
+                            waiting_for_rating = False
+                            print("Confidence rating: 2 (Medium)")
+                        elif response['key'] == 4:  # High confidence
+                            confidence_rating = 3
+                            waiting_for_rating = False
+                            print("Confidence rating: 3 (High)")
+                        elif response['key'] == 6:  # Quit
+                            self.cleanup()
+                            core.quit()
+            else:
+                # Keyboard backup for testing
+                keys = event.getKeys(['1', '2', '3', 'escape'])
+                if keys:
+                    if '1' in keys:
+                        confidence_rating = 1
+                        waiting_for_rating = False
+                    elif '2' in keys:
+                        confidence_rating = 2
+                        waiting_for_rating = False
+                    elif '3' in keys:
+                        confidence_rating = 3
+                        waiting_for_rating = False
+                    elif 'escape' in keys:
+                        core.quit()
+            
+            core.wait(0.008)  # Adjusted for 120Hz
+        
+        # Handle timeout
+        if confidence_rating is None:
+            print("Confidence rating timed out")
+            confidence_rating = 0  # Indicate no rating given
+        
+        return confidence_rating
+
+    def run_trial(self, trial_num, block_num):
+        """Run a single continuous RDM trial"""
+        print(f"\nRunning trial {trial_num + 1} of block {block_num + 1}")
+        
+        # Initialize trial variables
+        trial_start_time = time.time()
+        motion_direction = random.choice([0, 180])  # 0=right, 180=left
+        correct_response = 'right' if motion_direction == 0 else 'left'
+        
+        # Reset trial state (simplified - no EMG variables)
+        response_made = False
+        response_key = None
+        rt = None
+        confidence = None
+        
+        # Run ITI first
+        self.run_iti()
+        
+        # Start high coherence phase
+        direction_text = 'RIGHT' if motion_direction == 0 else 'LEFT'
+        print(f"Starting coherent motion: {direction_text} ({self.config['high_coherence']*100:.0f}% coherence)")
+        print(f"DEBUG: motion_direction = {motion_direction}, direction_text = {direction_text}")
+        
+        self.in_coherent_phase = True
+        self.coherent_phase_start = time.time()
+        
+        coherent_timer = core.Clock()
+        if self.cedrus_box:
+            self.cedrus_box.clear_response_queue()
+        
+        # Main trial loop - wait for response or timeout
+        while coherent_timer.getTime() < self.settings['high_coherence_max'] and not response_made:
+            # Update dots with high coherence in specified direction
+            self.update_dots(self.config['high_coherence'], motion_direction)
+            
+            # Draw stimulus
+            self.draw_dots()
+            self.fixation.draw()
+            
+            # Show trial info (if enabled) - position above the dot area
+            if self.config['show_trial_info']:
+                info_text = f"Block {block_num + 1}, Trial {trial_num + 1}"
+                self.instruction_text.text = info_text
+                self.instruction_text.pos = (0, 0.25)  # Position above dots during trials
+                self.instruction_text.draw()
+            
+            self.win.flip()
+            
+            # Check for responses
+            if self.cedrus_box:
+                self.cedrus_box.poll_for_response()
+                if self.cedrus_box.response_queue:
+                    response = self.cedrus_box.get_next_response()
+                    if response['pressed']:
+                        if response['key'] in [0, 1]:  # Left or right
+                            response_made = True
+                            response_key = self.button_map[response['key']]
+                            rt = coherent_timer.getTime()
+                            print(f"Response: {response_key}, RT: {rt:.3f}s")
+                        elif response['key'] == 6:  # Quit
+                            self.cleanup()
+                            core.quit()
+            else:
+                # Keyboard backup
+                keys = event.getKeys(['left', 'right', 'escape'])
+                if keys:
+                    if 'left' in keys:
+                        response_made = True
+                        response_key = 'left'
+                        rt = coherent_timer.getTime()
+                    elif 'right' in keys:
+                        response_made = True
+                        response_key = 'right'
+                        rt = coherent_timer.getTime()
+                    elif 'escape' in keys:
+                        core.quit()
+            
+            core.wait(1/self.settings['refresh_rate'])
+        
+        # Process response and collect confidence
+        if response_made:
+            print("Collecting confidence rating...")
+            confidence = self.collect_confidence_rating(motion_direction)
+        else:
+            print("No response given within time limit")
+        
+        # Record trial data
+        trial_data = {
+            'block': block_num,
+            'trial': trial_num,
+            'motion_direction': 'right' if motion_direction == 0 else 'left',
+            'correct_response': correct_response,
+            'response': response_key,
+            'rt': rt,
+            'accuracy': (response_key == correct_response) if response_key else None,
+            'confidence': confidence,
+            'coherent_duration': coherent_timer.getTime(),
+            'trial_start_time': trial_start_time
+        }
+        
+        self.trial_data.append(trial_data)
+        return trial_data
+
+    def run_block(self, block_num):
+        """Run a single block of trials"""
+        print(f"\nStarting Block {block_num + 1}")
+        
+        # Show block start message
+        self.instruction_text.text = f"Block {block_num + 1} of {self.config['n_blocks']}\n\nPress YELLOW to start"
+        self.instruction_text.draw()
+        # Do NOT draw fixation during block start message
+        self.win.flip()
+        
+        # Wait for start
+        waiting = True
+        while waiting:
+            if self.cedrus_box:
+                self.cedrus_box.poll_for_response()
+                if self.cedrus_box.response_queue:
+                    response = self.cedrus_box.get_next_response()
+                    if response['pressed'] and response['key'] == 5:  # Yellow
+                        waiting = False
+                    elif response['pressed'] and response['key'] == 6:  # Quit
+                        self.cleanup()
+                        core.quit()
+            else:
+                keys = event.getKeys(['space', 'escape'])
+                if 'space' in keys:
+                    waiting = False
+                elif 'escape' in keys:
+                    core.quit()
+            
+            core.wait(0.01)
+        
+        # Run trials
+        for trial in range(self.config['n_trials_per_block']):
+            self.run_trial(trial, block_num)
+
+    def save_data(self, participant_info):
+        """Save experimental data"""
+        if self.trial_data:
+            df = pd.DataFrame(self.trial_data)
+            
+            # Add participant info
+            for key, value in participant_info.items():
+                df[key] = value
+            
+            filename = f"{participant_info['participant']}-ses{participant_info['session']}-{participant_info['date_time']}_continuous_rdm_CUSTOM_DOTS.csv"
+            filepath = self.data_path / filename
+            
+            df.to_csv(filepath, index=False)
+            print(f"Data saved: {filename}")
+
+    def cleanup(self):
+        """Clean up resources"""
+        if hasattr(self, 'cedrus_box') and self.cedrus_box:
+            self.cedrus_box.clear_response_queue()
+        
+        if hasattr(self, 'win'):
+            self.win.close()
+
+    def run_experiment(self):
+        """Run the complete experiment"""
+        try:
+            # Setup
+            participant_info = self.get_participant_info()
+            self.setup_display()
+            
+            # Show instructions
+            self.show_instructions()
+            
+            # Run blocks
+            for block in range(self.config['n_blocks']):
+                self.run_block(block)
+                
+                # Break between blocks (except last)
+                if block < self.config['n_blocks'] - 1:
+                    self.instruction_text.text = f"Block {block + 1} completed!\n\nTake a break.\n\nPress YELLOW when ready for next block."
+                    self.instruction_text.draw()
+                    # Do NOT draw fixation during break message
+                    self.win.flip()
+                    
+                    # Wait for continue
+                    waiting = True
+                    while waiting:
+                        if self.cedrus_box:
+                            self.cedrus_box.poll_for_response()
+                            if self.cedrus_box.response_queue:
+                                response = self.cedrus_box.get_next_response()
+                                if response['pressed'] and response['key'] == 5:
+                                    waiting = False
+                                elif response['pressed'] and response['key'] == 6:
+                                    self.cleanup()
+                                    core.quit()
+                        else:
+                            keys = event.getKeys(['space', 'escape'])
+                            if 'space' in keys:
+                                waiting = False
+                            elif 'escape' in keys:
+                                core.quit()
+                        core.wait(0.01)
+            
+            # Show completion message
+            self.instruction_text.text = "Experiment completed!\n\nThank you for participating."
+            self.instruction_text.draw()
+            # Do NOT draw fixation during completion message
+            self.win.flip()
+            core.wait(3.0)
+            
+            # Save data
+            self.save_data(participant_info)
+            
+        except Exception as e:
+            print(f"Experiment error: {e}")
+        finally:
+            self.cleanup()
+
+if __name__ == "__main__":
+    print("=== RDM EXPERIMENT WITH CUSTOM DOTS ===")
+    print("This version uses custom dot implementation to avoid direction bugs!")
+    task = ContinuousRDMTask()
+    task.run_experiment()
