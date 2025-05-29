@@ -1,0 +1,175 @@
+BrainVision Data Exchange Header File Version 1.0
+; Data created by the BrainVision Recorder
+
+[Common Infos]
+Codepage=UTF-8
+DataFile=1stEMG_Test.eeg
+MarkerFile=1stEMG_Test.vmrk
+DataFormat=BINARY
+; Data orientation: MULTIPLEXED=ch1,pt1, ch2,pt1 ...
+DataOrientation=MULTIPLEXED
+NumberOfChannels=40
+; Sampling interval in microseconds
+SamplingInterval=200
+
+[Binary Infos]
+BinaryFormat=INT_16
+
+[Channel Infos]
+; Each entry: Ch<Channel number>=<Name>,<Reference channel name>,
+; <Resolution in "Unit">,<Unit>, Future extensions..
+; Fields are delimited by commas, some fields might be omitted (empty).
+; Commas in channel names are coded as "\1".
+Ch1=Fp1,,0.5,µV
+Ch2=Fp2,,0.5,µV
+Ch3=F3,,0.5,µV
+Ch4=F4,,0.5,µV
+Ch5=C3,,0.5,µV
+Ch6=C4,,0.5,µV
+Ch7=P3,,0.5,µV
+Ch8=P4,,0.5,µV
+Ch9=O1,,0.5,µV
+Ch10=O2,,0.5,µV
+Ch11=F7,,0.5,µV
+Ch12=F8,,0.5,µV
+Ch13=T7,,0.5,µV
+Ch14=T8,,0.5,µV
+Ch15=P7,,0.5,µV
+Ch16=P8,,0.5,µV
+Ch17=Fz,,0.5,µV
+Ch18=Cz,,0.5,µV
+Ch19=Pz,,0.5,µV
+Ch20=Oz,,0.5,µV
+Ch21=AF1,,0.5,µV
+Ch22=AF2,,0.5,µV
+Ch23=FC1,,0.5,µV
+Ch24=FC2,,0.5,µV
+Ch25=CP1,,0.5,µV
+Ch26=CP2,,0.5,µV
+Ch27=PO1,,0.5,µV
+Ch28=PO2,,0.5,µV
+Ch29=FC5,,0.5,µV
+Ch30=FC6,,0.5,µV
+Ch31=CP5,,0.5,µV
+Ch32=CP6,,0.5,µV
+Ch33=EMG 1,,0.5,µV
+Ch34=EMG 2,,0.5,µV
+Ch35=EMG 3,,0.5,µV
+Ch36=EMG 4,,0.5,µV
+Ch37=EMG 5,,0.5,µV
+Ch38=EMG 6,,0.5,µV
+Ch39=EMG 7,,0.5,µV
+Ch40=EMG 8,,0.5,µV
+
+[Comment]
+
+BrainVision Recorder Professional   -   V. 1.24.0001
+
+
+A m p l i f i e r  S e t u p
+============================
+Number of channels: 40
+Sampling Rate [Hz]: 5000
+Sampling Interval [µS]: 200
+
+Channels
+--------
+#     Name      Phys. Chn.    Resolution / Unit   Low Cutoff [s]   High Cutoff [Hz]   Notch [Hz]    Series Res. [kOhm] Gradient         Offset
+1     Fp1         1                0.5 µV             10              250              Off                0                 
+2     Fp2         2                0.5 µV             10              250              Off                0                 
+3     F3          3                0.5 µV             10              250              Off                0                 
+4     F4          4                0.5 µV             10              250              Off                0                 
+5     C3          5                0.5 µV             10              250              Off                0                 
+6     C4          6                0.5 µV             10              250              Off                0                 
+7     P3          7                0.5 µV             10              250              Off                0                 
+8     P4          8                0.5 µV             10              250              Off                0                 
+9     O1          9                0.5 µV             10              250              Off                0                 
+10    O2          10               0.5 µV             10              250              Off                0                 
+11    F7          11               0.5 µV             10              250              Off                0                 
+12    F8          12               0.5 µV             10              250              Off                0                 
+13    T7          13               0.5 µV             10              250              Off                0                 
+14    T8          14               0.5 µV             10              250              Off                0                 
+15    P7          15               0.5 µV             10              250              Off                0                 
+16    P8          16               0.5 µV             10              250              Off                0                 
+17    Fz          17               0.5 µV             10              250              Off                0                 
+18    Cz          18               0.5 µV             10              250              Off                0                 
+19    Pz          19               0.5 µV             10              250              Off                0                 
+20    Oz          20               0.5 µV             10              250              Off                0                 
+21    AF1         21               0.5 µV             10              250              Off                0                 
+22    AF2         22               0.5 µV             10              250              Off                0                 
+23    FC1         23               0.5 µV             10              250              Off                0                 
+24    FC2         24               0.5 µV             10              250              Off                0                 
+25    CP1         25               0.5 µV             10              250              Off                0                 
+26    CP2         26               0.5 µV             10              250              Off                0                 
+27    PO1         27               0.5 µV             10              250              Off                0                 
+28    PO2         28               0.5 µV             10              250              Off                0                 
+29    FC5         29               0.5 µV             10              250              Off                0                 
+30    FC6         30               0.5 µV             10              250              Off                0                 
+31    CP5         31               0.5 µV             10              250              Off                0                 
+32    CP6         32               0.5 µV             10              250              Off                0                 
+33    EMG 1       33               0.5 µV             10              250              Off                0                 
+34    EMG 2       34               0.5 µV             10              250              Off                0                 
+35    EMG 3       35               0.5 µV             10              250              Off                0                 
+36    EMG 4       36               0.5 µV             10              250              Off                0                 
+37    EMG 5       37               0.5 µV             10              250              Off                0                 
+38    EMG 6       38               0.5 µV             10              250              Off                0                 
+39    EMG 7       39               0.5 µV             10              250              Off                0                 
+40    EMG 8       40               0.5 µV             10              250              Off                0                 
+
+S o f t w a r e  F i l t e r s
+==============================
+Disabled
+
+
+Data Electrodes Selected Impedance Measurement Range: 0 - 100 kOhm
+Impedance [kOhm] at 14:17:29 :
+Fp1:        ???
+Fp2:        ???
+F3:         ???
+F4:         ???
+C3:         ???
+C4:         ???
+P3:         ???
+P4:         ???
+O1:         ???
+O2:         ???
+F7:         ???
+F8:         ???
+T7:         ???
+T8:         ???
+P7:         ???
+P8:         ???
+Fz:         ???
+Cz:         ???
+Pz:         ???
+Oz:         ???
+AF1:        ???
+AF2:        ???
+FC1:        ???
+FC2:        ???
+CP1:        ???
+CP2:        ???
+PO1:        ???
+PO2:        ???
+FC5:        ???
+FC6:        ???
+CP5:        ???
+CP6:        ???
+EMG 1+:     ???
+EMG 1-:     ???
+EMG 2+:     ???
+EMG 2-:     ???
+EMG 3+:     ???
+EMG 3-:     ???
+EMG 4+:     ???
+EMG 4-:     ???
+EMG 5+:     ???
+EMG 5-:     ???
+EMG 6+:     ???
+EMG 6-:     ???
+EMG 7+:     ???
+EMG 7-:     ???
+EMG 8+:     ???
+EMG 8-:     ???
+Ref:        254
+Gnd:        372
