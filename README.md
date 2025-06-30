@@ -60,33 +60,6 @@ pip install -r requirements.txt
 # - matplotlib>=3.5.0
 ```
 
-## Project Structure
-
-```
-├── src/
-│   ├── main_experiment.py          # Main experiment controller
-│   ├── emg_interface.py           # EMG communication and processing
-│   ├── dot_motion_stimulus.py     # RDM stimulus generation
-│   ├── trial_handler.py           # Trial management and logic
-│   └── data_logger.py             # Data collection and storage
-├── config/
-│   ├── experiment_settings.py     # Experiment parameters
-│   └── hardware_config.py         # Hardware-specific settings
-├── analysis/
-│   ├── behavioral_analysis.py     # Response time and accuracy analysis
-│   └── emg_analysis.py            # EMG onset detection validation
-├── data/                          # Raw and processed data storage
-├── docs/                          # Documentation and protocols
-├── tests/                         # Unit tests for timing accuracy
-└── requirements.txt
-```
-
-## Usage
-
-### Basic Experiment Run
-```bash
-python src/main_experiment.py --participant P001 --session 1
-```
 
 ### Configuration Options
 ```bash
