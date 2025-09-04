@@ -1,0 +1,3744 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Elmira(Coh14)-ses001-20250830-150214_close_loop_emg_rdm_trials — EMG-BCI Analysis</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+.header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; text-align: center; margin-bottom: 20px; }
+
+.summary, .stats-section {
+  background: white; margin: 20px 0; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.summary-grid {
+  display: grid; grid-template-columns: repeat(2, minmax(200px, 1fr)); gap: 8px 16px; margin-bottom: 14px;
+}
+.summary-grid .k { font-weight: 700; color: #333; }
+.summary-grid .v { margin-left: 8px; color: #222; }
+.summary-grid .wide { grid-column: 1 / -1; }
+
+.mini-table { border-collapse: collapse; font-size: 12px; }
+.mini-table th, .mini-table td { border:1px solid #ddd; padding:6px 8px; }
+.mini-table thead th { background:#e8f5e9; }
+
+.stats-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+.stats-table th, .stats-table td { padding: 8px; border: 1px solid #ddd; text-align: center; font-size: 12px; }
+.stats-table th { background-color: #4CAF50; color: white; }
+
+.legend { background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+.legend-item { display: inline-block; margin: 5px 10px; padding: 5px 10px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+
+.block { margin: 20px 0; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+.block-header { background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%); color: white; padding: 15px; font-weight: bold; font-size: 18px; }
+.trials-table { width: 100%; border-collapse: collapse; background: white; }
+.trials-table th { background-color: #e8e8e8; padding: 10px; border: 1px solid #ddd; font-weight: bold; font-size: 12px; }
+.trials-table td { padding: 8px; border: 1px solid #ddd; text-align: center; font-size: 11px; }
+
+/* Row colors by condition */
+.control  { background-color: #9e9e9e; color: white; }
+.delay-0  { background-color: #f44336; color: white; }
+.delay-50 { background-color: #ff9800; color: white; }
+.delay-100{ background-color: #ffeb3b; color: black; }
+.delay-150{ background-color: #4caf50; color: white; }
+.delay-200{ background-color: #2196f3; color: white; }
+.delay-250{ background-color: #9c27b0; color: white; }
+
+/* Make timing numbers black + bold regardless of row color */
+.timing-cols { color:#000 !important; font-weight: 800 !important; }
+
+/* Classification cell colors (match charts) */
+.class-col { font-weight: 800; }
+.cls-before { background-color:#4CAF50; color:#fff; }
+.cls-after  { background-color:#F44336; color:#fff; }
+.cls-none   { background-color:#9E9E9E; color:#fff; }
+
+/* EMG highlight for delayed trials with EMG = F */
+.emg-flag { font-weight:900; outline:2px solid #000; outline-offset:-2px; }
+
+/* Toggle */
+.toggle-button {
+  background:#764ba2; color:white; padding:10px 14px; border:none; border-radius:8px; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.2);
+}
+#chartsContainer { display:none; }
+#chartsContainer.show { display:block; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Elmira(Coh14)-ses001-20250830-150214_close_loop_emg_rdm_trials</h1>
+  <p>EMG-BCI Closed-Loop Experiment Analysis</p>
+</div>
+
+
+    <div class="summary">
+      <h2>Session Summary</h2>
+      <div class="summary-grid">
+        <div><span class="k">Blocks</span><span class="v">6</span></div>
+        <div><span class="k">Control Trials</span><span class="v">120</span></div>
+        <div class="wide"><span class="k">Conditions</span><span class="v">control, delay_0, delay_100, delay_150, delay_200, delay_250, delay_50</span></div>
+        <div class="wide"><span class="k">No Response (Delay Trials)</span><span class="v">EMG detected = 25 &nbsp;&nbsp;|&nbsp;&nbsp; EMG not detected = 22</span></div>
+      </div>
+      <div class="mini-table-wrap">
+        <table class="mini-table">
+          <thead><tr><th>Condition</th><th>Trials</th></tr></thead>
+          <tbody><tr><td>control</td><td>120</td></tr><tr><td>delay_50</td><td>24</td></tr><tr><td>delay_0</td><td>24</td></tr><tr><td>delay_200</td><td>18</td></tr><tr><td>delay_150</td><td>18</td></tr><tr><td>delay_100</td><td>18</td></tr><tr><td>delay_250</td><td>18</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+    
+
+<div class="legend">
+  <h3>Color Legend</h3>
+  <span class="legend-item control"  style="background:#9e9e9e;color:#fff;">Control</span>
+  <span class="legend-item delay-0"  style="background:#f44336;color:#fff;">Delay 0</span>
+  <span class="legend-item delay-50" style="background:#ff9800;color:#fff;">Delay 50</span>
+  <span class="legend-item delay-100"style="background:#ffeb3b;color:#000;">Delay 100</span>
+  <span class="legend-item delay-150"style="background:#4caf50;color:#fff;">Delay 150</span>
+  <span class="legend-item delay-200"style="background:#2196f3;color:#fff;">Delay 200</span>
+  <span class="legend-item delay-250"style="background:#9c27b0;color:#fff;">Delay 250</span>
+</div>
+
+<div class="stats-section">
+  <h2>Timing Statistics by Condition</h2>
+  <table class="stats-table">
+    <tr>
+      <th>Condition</th><th>Trials with Flip</th><th>Actual Delay (μ ± σ ms)</th><th>Timing Error (μ ± σ ms)</th><th>Delay Range (ms)</th>
+    </tr>
+    
+        <tr>
+          <td>delay_0</td>
+          <td>20/24</td>
+          <td>6.7 ± 0.8</td>
+          <td>6.7 ± 0.8</td>
+          <td>5.0 – 8.0</td>
+        </tr>
+        <tr>
+          <td>delay_50</td>
+          <td>19/24</td>
+          <td>141.4 ± 9.0</td>
+          <td>91.4 ± 9.0</td>
+          <td>134.9 – 172.1</td>
+        </tr>
+        <tr>
+          <td>delay_100</td>
+          <td>15/18</td>
+          <td>137.4 ± 2.8</td>
+          <td>37.4 ± 2.8</td>
+          <td>132.9 – 143.9</td>
+        </tr>
+        <tr>
+          <td>delay_150</td>
+          <td>16/18</td>
+          <td>264.8 ± 29.9</td>
+          <td>114.8 ± 29.9</td>
+          <td>150.9 – 283.9</td>
+        </tr>
+        <tr>
+          <td>delay_200</td>
+          <td>8/18</td>
+          <td>259.3 ± 22.1</td>
+          <td>59.3 ± 22.1</td>
+          <td>200.9 – 270.9</td>
+        </tr>
+        <tr>
+          <td>delay_250</td>
+          <td>13/18</td>
+          <td>268.4 ± 4.9</td>
+          <td>18.4 ± 4.9</td>
+          <td>261.9 – 281.9</td>
+        </tr>
+  </table>
+</div>
+
+<button class="toggle-button" onclick="toggleCharts()">Show Interactive Charts</button>
+<div id="chartsContainer" class="stats-section">
+  <h2>Response Classification Plots</h2>
+  <h3>By Assigned Delay Conditions (Percent)</h3>
+  <canvas id="condChart" width="900" height="420"></canvas>
+  <h3>By Actual Delay Clusters (Percent)</h3>
+  <p><em>Clusters based on actual delays: ~6ms (delay_0), ~140ms (delay_50,100), ~260ms (delay_150,200,250)</em></p>
+  <canvas id="clusChart" width="900" height="420"></canvas>
+</div>
+
+
+    <div class="stats-section">
+      <h2>Compatibility & Causal Breakdown</h2>
+      <div class="mini-table-wrap">
+        <table class="mini-table">
+          <thead><tr><th colspan="4">Delayed Trials: No-Flip Attribution</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Total no-flip (delays)</strong></td><td>29</td><td></td><td></td></tr>
+            <tr><td>No EMG onset (EMG = F)</td><td>22</td><td>75.9%</td><td>—</td></tr>
+            <tr><td>Button pressed before delay</td><td>3</td><td>10.3%</td><td>—</td></tr>
+            <tr><td>Other/Unknown</td><td>4</td><td>13.8%</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mini-table-wrap" style="margin-top:12px;">
+        <table class="mini-table">
+          <thead><tr><th colspan="4">No Response caused by Aborted EMG (EMG=T, no button)</th></tr></thead>
+          <tbody>
+            <tr><th>Per Condition</th><th>Total NR</th><th>NR with EMG=T</th><th>Share</th></tr>
+            <tr><td>delay_0</td><td>10</td><td>6</td><td>60.0%</td></tr><tr><td>delay_50</td><td>9</td><td>4</td><td>44.4%</td></tr><tr><td>delay_100</td><td>6</td><td>3</td><td>50.0%</td></tr><tr><td>delay_150</td><td>3</td><td>2</td><td>66.7%</td></tr><tr><td>delay_200</td><td>11</td><td>4</td><td>36.4%</td></tr><tr><td>delay_250</td><td>8</td><td>6</td><td>75.0%</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="mini-table-wrap" style="margin-top:12px;">
+        <table class="mini-table">
+          <thead><tr><th colspan="4">No Response caused by Aborted EMG — by Actual-Delay Cluster</th></tr></thead>
+          <tbody>
+            <tr><th>Cluster</th><th>Total NR</th><th>NR with EMG=T</th><th>Share</th></tr>
+            <tr><td>~6ms</td><td>6</td><td>6</td><td>100.0%</td></tr><tr><td>~140ms</td><td>7</td><td>7</td><td>100.0%</td></tr><tr><td>~260ms</td><td>8</td><td>8</td><td>100.0%</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p style="margin-top:12px;"><strong>Consistency check (this page):</strong>
+        No Response (delay trials) — EMG detected = 25, EMG not detected = 22.
+      </p>
+    </div>
+    
+
+
+        <div class="block">
+          <div class="block-header">Block 1 — 40 Trials</div>
+          <table class="trials-table">
+            <tr>
+              <th>Trial</th><th>Condition</th>
+              <th>Assigned Delay (ms)</th>
+              <th>Actual Delay (ms)</th>
+              <th>Timing Error (ms)</th>
+              <th>Button</th><th>Response</th><th>RT (ms)</th>
+              <th>Classification</th><th>EMG</th><th>Flip</th><th>Accuracy</th>
+            </tr>
+            
+            <tr class="control">
+              <td>1</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>2</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.4</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>3</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-200">
+              <td>4</td>
+              <td>delay_200</td>
+              <td class="timing-cols"><strong>200.0</strong></td>
+              <td class="timing-cols"><strong>266.9</strong></td>
+              <td class="timing-cols"><strong>66.9</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>5</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>0.9</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>6</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-150">
+              <td>7</td>
+              <td>delay_150</td>
+              <td class="timing-cols"><strong>150.0</strong></td>
+              <td class="timing-cols"><strong>283.9</strong></td>
+              <td class="timing-cols"><strong>133.9</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.3</td>
+              <td class="class-col cls-after"><strong>Button_After_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>False</td>
+            </tr>
+            <tr class="control">
+              <td>8</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>0.9</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-100">
+              <td>9</td>
+              <td>delay_100</td>
+              <td class="timing-cols"><strong>100.0</strong></td>
+              <td class="timing-cols"><strong>134.9</strong></td>
+              <td class="timing-cols"><strong>34.9</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.2</td>
+              <td class="class-col cls-after"><strong>Button_After_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>False</td>
+            </tr>
+            <tr class="delay-50">
+              <td>10</td>
+              <td>delay_50</td>
+              <td class="timing-cols"><strong>50.0</strong></td>
+              <td class="timing-cols"><strong>134.9</strong></td>
+              <td class="timing-cols"><strong>84.9</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-100">
+              <td>11</td>
+              <td>delay_100</td>
+              <td class="timing-cols"><strong>100.0</strong></td>
+              <td class="timing-cols"><strong>136.9</strong></td>
+              <td class="timing-cols"><strong>36.9</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>12</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-0">
+              <td>13</td>
+              <td>delay_0</td>
+              <td class="timing-cols"><strong>0.0</strong></td>
+              <td class="timing-cols"><strong>7.0</strong></td>
+              <td class="timing-cols"><strong>7.0</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>14</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.3</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-100">
+              <td>15</td>
+              <td>delay_100</td>
+              <td class="timing-cols"><strong>100.0</strong></td>
+              <td class="timing-cols"><strong>136.9</strong></td>
+              <td class="timing-cols"><strong>36.9</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.3</td>
+              <td class="class-col cls-after"><strong>Button_After_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>False</td>
+            </tr>
+            <tr class="control">
+              <td>16</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.3</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>17</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.3</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>18</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.2</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-250">
+              <td>19</td>
+              <td>delay_250</td>
+              <td class="timing-cols"><strong>250.0</strong></td>
+              <td class="timing-cols"><strong>265.9</strong></td>
+              <td class="timing-cols"><strong>15.9</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.4</td>
+              <td class="class-col cls-after"><strong>Button_After_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>False</td>
+            </tr>
+            <tr class="control">
+              <td>20</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-150">
+              <td>21</td>
+              <td>delay_150</td>
+              <td class="timing-cols"><strong>150.0</strong></td>
+              <td class="timing-cols"><strong>277.9</strong></td>
+              <td class="timing-cols"><strong>127.9</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.3</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-0">
+              <td>22</td>
+              <td>delay_0</td>
+              <td class="timing-cols"><strong>0.0</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="emg-flag">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>23</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-150">
+              <td>24</td>
+              <td>delay_150</td>
+              <td class="timing-cols"><strong>150.0</strong></td>
+              <td class="timing-cols"><strong>264.9</strong></td>
+              <td class="timing-cols"><strong>114.9</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.4</td>
+              <td class="class-col cls-after"><strong>Button_After_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>False</td>
+            </tr>
+            <tr class="delay-200">
+              <td>25</td>
+              <td>delay_200</td>
+              <td class="timing-cols"><strong>200.0</strong></td>
+              <td class="timing-cols"><strong>267.9</strong></td>
+              <td class="timing-cols"><strong>67.9</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.3</td>
+              <td class="class-col cls-after"><strong>Button_After_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>False</td>
+            </tr>
+            <tr class="delay-250">
+              <td>26</td>
+              <td>delay_250</td>
+              <td class="timing-cols"><strong>250.0</strong></td>
+              <td class="timing-cols"><strong>266.9</strong></td>
+              <td class="timing-cols"><strong>16.9</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.0</td>
+              <td class="class-col cls-after"><strong>Button_After_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>False</td>
+            </tr>
+            <tr class="delay-0">
+              <td>27</td>
+              <td>delay_0</td>
+              <td class="timing-cols"><strong>0.0</strong></td>
+              <td class="timing-cols"><strong>7.0</strong></td>
+              <td class="timing-cols"><strong>7.0</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-50">
+              <td>28</td>
+              <td>delay_50</td>
+              <td class="timing-cols"><strong>50.0</strong></td>
+              <td class="timing-cols"><strong>138.1</strong></td>
+              <td class="timing-cols"><strong>88.1</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.3</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>29</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.1</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>30</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.2</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>31</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-50">
+              <td>32</td>
+              <td>delay_50</td>
+              <td class="timing-cols"><strong>50.0</strong></td>
+              <td class="timing-cols"><strong>136.9</strong></td>
+              <td class="timing-cols"><strong>86.9</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.4</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-200">
+              <td>33</td>
+              <td>delay_200</td>
+              <td class="timing-cols"><strong>200.0</strong></td>
+              <td class="timing-cols"><strong>267.9</strong></td>
+              <td class="timing-cols"><strong>67.9</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.3</td>
+              <td class="class-col cls-after"><strong>Button_After_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>False</td>
+            </tr>
+            <tr class="control">
+              <td>34</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.2</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>35</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>36</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>0.9</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>37</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.1</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-250">
+              <td>38</td>
+              <td>delay_250</td>
+              <td class="timing-cols"><strong>250.0</strong></td>
+              <td class="timing-cols"><strong>261.9</strong></td>
+              <td class="timing-cols"><strong>11.9</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-0">
+              <td>39</td>
+              <td>delay_0</td>
+              <td class="timing-cols"><strong>0.0</strong></td>
+              <td class="timing-cols"><strong>6.0</strong></td>
+              <td class="timing-cols"><strong>6.0</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-50">
+              <td>40</td>
+              <td>delay_50</td>
+              <td class="timing-cols"><strong>50.0</strong></td>
+              <td class="timing-cols"><strong>172.1</strong></td>
+              <td class="timing-cols"><strong>122.1</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>nan</td>
+            </tr>
+          </table>
+        </div>
+        <div class="block">
+          <div class="block-header">Block 2 — 40 Trials</div>
+          <table class="trials-table">
+            <tr>
+              <th>Trial</th><th>Condition</th>
+              <th>Assigned Delay (ms)</th>
+              <th>Actual Delay (ms)</th>
+              <th>Timing Error (ms)</th>
+              <th>Button</th><th>Response</th><th>RT (ms)</th>
+              <th>Classification</th><th>EMG</th><th>Flip</th><th>Accuracy</th>
+            </tr>
+            
+            <tr class="delay-200">
+              <td>1</td>
+              <td>delay_200</td>
+              <td class="timing-cols"><strong>200.0</strong></td>
+              <td class="timing-cols"><strong>267.9</strong></td>
+              <td class="timing-cols"><strong>67.9</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.3</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-250">
+              <td>2</td>
+              <td>delay_250</td>
+              <td class="timing-cols"><strong>250.0</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="emg-flag">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>3</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.1</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-50">
+              <td>4</td>
+              <td>delay_50</td>
+              <td class="timing-cols"><strong>50.0</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="emg-flag">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-200">
+              <td>5</td>
+              <td>delay_200</td>
+              <td class="timing-cols"><strong>200.0</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="emg-flag">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-50">
+              <td>6</td>
+              <td>delay_50</td>
+              <td class="timing-cols"><strong>50.0</strong></td>
+              <td class="timing-cols"><strong>139.9</strong></td>
+              <td class="timing-cols"><strong>89.9</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>0.9</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-250">
+              <td>7</td>
+              <td>delay_250</td>
+              <td class="timing-cols"><strong>250.0</strong></td>
+              <td class="timing-cols"><strong>267.9</strong></td>
+              <td class="timing-cols"><strong>17.9</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.1</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>8</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-150">
+              <td>9</td>
+              <td>delay_150</td>
+              <td class="timing-cols"><strong>150.0</strong></td>
+              <td class="timing-cols"><strong>271.9</strong></td>
+              <td class="timing-cols"><strong>121.9</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.4</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>10</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>0.9</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>11</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-0">
+              <td>12</td>
+              <td>delay_0</td>
+              <td class="timing-cols"><strong>0.0</strong></td>
+              <td class="timing-cols"><strong>7.0</strong></td>
+              <td class="timing-cols"><strong>7.0</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.2</td>
+              <td class="class-col cls-after"><strong>Button_After_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>False</td>
+            </tr>
+            <tr class="control">
+              <td>13</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.0</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-150">
+              <td>14</td>
+              <td>delay_150</td>
+              <td class="timing-cols"><strong>150.0</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">T</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>15</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-200">
+              <td>16</td>
+              <td>delay_200</td>
+              <td class="timing-cols"><strong>200.0</strong></td>
+              <td class="timing-cols"><strong>267.9</strong></td>
+              <td class="timing-cols"><strong>67.9</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-50">
+              <td>17</td>
+              <td>delay_50</td>
+              <td class="timing-cols"><strong>50.0</strong></td>
+              <td class="timing-cols"><strong>137.9</strong></td>
+              <td class="timing-cols"><strong>87.9</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.3</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>18</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.2</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>19</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.2</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-0">
+              <td>20</td>
+              <td>delay_0</td>
+              <td class="timing-cols"><strong>0.0</strong></td>
+              <td class="timing-cols"><strong>7.0</strong></td>
+              <td class="timing-cols"><strong>7.0</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.3</td>
+              <td class="class-col cls-after"><strong>Button_After_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>False</td>
+            </tr>
+            <tr class="delay-0">
+              <td>21</td>
+              <td>delay_0</td>
+              <td class="timing-cols"><strong>0.0</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="emg-flag">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>22</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-50">
+              <td>23</td>
+              <td>delay_50</td>
+              <td class="timing-cols"><strong>50.0</strong></td>
+              <td class="timing-cols"><strong>134.9</strong></td>
+              <td class="timing-cols"><strong>84.9</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>24</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.4</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-100">
+              <td>25</td>
+              <td>delay_100</td>
+              <td class="timing-cols"><strong>100.0</strong></td>
+              <td class="timing-cols"><strong>136.9</strong></td>
+              <td class="timing-cols"><strong>36.9</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.4</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-100">
+              <td>26</td>
+              <td>delay_100</td>
+              <td class="timing-cols"><strong>100.0</strong></td>
+              <td class="timing-cols"><strong>136.9</strong></td>
+              <td class="timing-cols"><strong>36.9</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.2</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-0">
+              <td>27</td>
+              <td>delay_0</td>
+              <td class="timing-cols"><strong>0.0</strong></td>
+              <td class="timing-cols"><strong>6.0</strong></td>
+              <td class="timing-cols"><strong>6.0</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.3</td>
+              <td class="class-col cls-after"><strong>Button_After_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>False</td>
+            </tr>
+            <tr class="control">
+              <td>28</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>29</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>30</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.0</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-250">
+              <td>31</td>
+              <td>delay_250</td>
+              <td class="timing-cols"><strong>250.0</strong></td>
+              <td class="timing-cols"><strong>264.9</strong></td>
+              <td class="timing-cols"><strong>14.9</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.2</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>32</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>33</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>34</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>35</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>36</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>0.8</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-150">
+              <td>37</td>
+              <td>delay_150</td>
+              <td class="timing-cols"><strong>150.0</strong></td>
+              <td class="timing-cols"><strong>266.9</strong></td>
+              <td class="timing-cols"><strong>116.9</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.1</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-100">
+              <td>38</td>
+              <td>delay_100</td>
+              <td class="timing-cols"><strong>100.0</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="emg-flag">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>39</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.4</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>40</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.4</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+          </table>
+        </div>
+        <div class="block">
+          <div class="block-header">Block 3 — 40 Trials</div>
+          <table class="trials-table">
+            <tr>
+              <th>Trial</th><th>Condition</th>
+              <th>Assigned Delay (ms)</th>
+              <th>Actual Delay (ms)</th>
+              <th>Timing Error (ms)</th>
+              <th>Button</th><th>Response</th><th>RT (ms)</th>
+              <th>Classification</th><th>EMG</th><th>Flip</th><th>Accuracy</th>
+            </tr>
+            
+            <tr class="delay-50">
+              <td>1</td>
+              <td>delay_50</td>
+              <td class="timing-cols"><strong>50.0</strong></td>
+              <td class="timing-cols"><strong>137.9</strong></td>
+              <td class="timing-cols"><strong>87.9</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>2</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-150">
+              <td>3</td>
+              <td>delay_150</td>
+              <td class="timing-cols"><strong>150.0</strong></td>
+              <td class="timing-cols"><strong>266.9</strong></td>
+              <td class="timing-cols"><strong>116.9</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.2</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>4</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.0</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>5</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>0.9</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-0">
+              <td>6</td>
+              <td>delay_0</td>
+              <td class="timing-cols"><strong>0.0</strong></td>
+              <td class="timing-cols"><strong>6.0</strong></td>
+              <td class="timing-cols"><strong>6.0</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.2</td>
+              <td class="class-col cls-after"><strong>Button_After_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>False</td>
+            </tr>
+            <tr class="control">
+              <td>7</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>8</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.2</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-50">
+              <td>9</td>
+              <td>delay_50</td>
+              <td class="timing-cols"><strong>50.0</strong></td>
+              <td class="timing-cols"><strong>140.9</strong></td>
+              <td class="timing-cols"><strong>90.9</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.4</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-250">
+              <td>10</td>
+              <td>delay_250</td>
+              <td class="timing-cols"><strong>250.0</strong></td>
+              <td class="timing-cols"><strong>281.9</strong></td>
+              <td class="timing-cols"><strong>31.9</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.4</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>11</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.4</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-50">
+              <td>12</td>
+              <td>delay_50</td>
+              <td class="timing-cols"><strong>50.0</strong></td>
+              <td class="timing-cols"><strong>139.9</strong></td>
+              <td class="timing-cols"><strong>89.9</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.2</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>13</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.0</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>14</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.4</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>15</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.4</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>16</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.4</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-200">
+              <td>17</td>
+              <td>delay_200</td>
+              <td class="timing-cols"><strong>200.0</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="emg-flag">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>18</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-250">
+              <td>19</td>
+              <td>delay_250</td>
+              <td class="timing-cols"><strong>250.0</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="emg-flag">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-100">
+              <td>20</td>
+              <td>delay_100</td>
+              <td class="timing-cols"><strong>100.0</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="emg-flag">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-0">
+              <td>21</td>
+              <td>delay_0</td>
+              <td class="timing-cols"><strong>0.0</strong></td>
+              <td class="timing-cols"><strong>7.0</strong></td>
+              <td class="timing-cols"><strong>7.0</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>22</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.3</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-0">
+              <td>23</td>
+              <td>delay_0</td>
+              <td class="timing-cols"><strong>0.0</strong></td>
+              <td class="timing-cols"><strong>8.0</strong></td>
+              <td class="timing-cols"><strong>8.0</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.3</td>
+              <td class="class-col cls-after"><strong>Button_After_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>False</td>
+            </tr>
+            <tr class="delay-200">
+              <td>24</td>
+              <td>delay_200</td>
+              <td class="timing-cols"><strong>200.0</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">T</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-0">
+              <td>25</td>
+              <td>delay_0</td>
+              <td class="timing-cols"><strong>0.0</strong></td>
+              <td class="timing-cols"><strong>5.0</strong></td>
+              <td class="timing-cols"><strong>5.0</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.0</td>
+              <td class="class-col cls-after"><strong>Button_After_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>False</td>
+            </tr>
+            <tr class="control">
+              <td>26</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>0.9</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-250">
+              <td>27</td>
+              <td>delay_250</td>
+              <td class="timing-cols"><strong>250.0</strong></td>
+              <td class="timing-cols"><strong>268.9</strong></td>
+              <td class="timing-cols"><strong>18.9</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-100">
+              <td>28</td>
+              <td>delay_100</td>
+              <td class="timing-cols"><strong>100.0</strong></td>
+              <td class="timing-cols"><strong>132.9</strong></td>
+              <td class="timing-cols"><strong>32.9</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>0.9</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>29</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>0.9</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>30</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-150">
+              <td>31</td>
+              <td>delay_150</td>
+              <td class="timing-cols"><strong>150.0</strong></td>
+              <td class="timing-cols"><strong>276.9</strong></td>
+              <td class="timing-cols"><strong>126.9</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.4</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-150">
+              <td>32</td>
+              <td>delay_150</td>
+              <td class="timing-cols"><strong>150.0</strong></td>
+              <td class="timing-cols"><strong>275.9</strong></td>
+              <td class="timing-cols"><strong>125.9</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.3</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>33</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>34</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.1</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-50">
+              <td>35</td>
+              <td>delay_50</td>
+              <td class="timing-cols"><strong>50.0</strong></td>
+              <td class="timing-cols"><strong>141.9</strong></td>
+              <td class="timing-cols"><strong>91.9</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.2</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>36</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>0.9</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-200">
+              <td>37</td>
+              <td>delay_200</td>
+              <td class="timing-cols"><strong>200.0</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="emg-flag">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-100">
+              <td>38</td>
+              <td>delay_100</td>
+              <td class="timing-cols"><strong>100.0</strong></td>
+              <td class="timing-cols"><strong>141.9</strong></td>
+              <td class="timing-cols"><strong>41.9</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.1</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>39</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>40</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.1</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+          </table>
+        </div>
+        <div class="block">
+          <div class="block-header">Block 4 — 40 Trials</div>
+          <table class="trials-table">
+            <tr>
+              <th>Trial</th><th>Condition</th>
+              <th>Assigned Delay (ms)</th>
+              <th>Actual Delay (ms)</th>
+              <th>Timing Error (ms)</th>
+              <th>Button</th><th>Response</th><th>RT (ms)</th>
+              <th>Classification</th><th>EMG</th><th>Flip</th><th>Accuracy</th>
+            </tr>
+            
+            <tr class="delay-100">
+              <td>1</td>
+              <td>delay_100</td>
+              <td class="timing-cols"><strong>100.0</strong></td>
+              <td class="timing-cols"><strong>138.9</strong></td>
+              <td class="timing-cols"><strong>38.9</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-150">
+              <td>2</td>
+              <td>delay_150</td>
+              <td class="timing-cols"><strong>150.0</strong></td>
+              <td class="timing-cols"><strong>276.9</strong></td>
+              <td class="timing-cols"><strong>126.9</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.1</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-200">
+              <td>3</td>
+              <td>delay_200</td>
+              <td class="timing-cols"><strong>200.0</strong></td>
+              <td class="timing-cols"><strong>200.9</strong></td>
+              <td class="timing-cols"><strong>0.9</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-0">
+              <td>4</td>
+              <td>delay_0</td>
+              <td class="timing-cols"><strong>0.0</strong></td>
+              <td class="timing-cols"><strong>6.0</strong></td>
+              <td class="timing-cols"><strong>6.0</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.1</td>
+              <td class="class-col cls-after"><strong>Button_After_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>False</td>
+            </tr>
+            <tr class="control">
+              <td>5</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>0.7</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>False</td>
+            </tr>
+            <tr class="control">
+              <td>6</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.5</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>7</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.1</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>8</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.1</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-250">
+              <td>9</td>
+              <td>delay_250</td>
+              <td class="timing-cols"><strong>250.0</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">T</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>10</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.2</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-200">
+              <td>11</td>
+              <td>delay_200</td>
+              <td class="timing-cols"><strong>200.0</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="emg-flag">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>12</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>13</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>0.9</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-150">
+              <td>14</td>
+              <td>delay_150</td>
+              <td class="timing-cols"><strong>150.0</strong></td>
+              <td class="timing-cols"><strong>150.9</strong></td>
+              <td class="timing-cols"><strong>0.9</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>0.9</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>15</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.4</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-50">
+              <td>16</td>
+              <td>delay_50</td>
+              <td class="timing-cols"><strong>50.0</strong></td>
+              <td class="timing-cols"><strong>140.9</strong></td>
+              <td class="timing-cols"><strong>90.9</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.3</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-0">
+              <td>17</td>
+              <td>delay_0</td>
+              <td class="timing-cols"><strong>0.0</strong></td>
+              <td class="timing-cols"><strong>8.0</strong></td>
+              <td class="timing-cols"><strong>8.0</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.2</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-100">
+              <td>18</td>
+              <td>delay_100</td>
+              <td class="timing-cols"><strong>100.0</strong></td>
+              <td class="timing-cols"><strong>143.9</strong></td>
+              <td class="timing-cols"><strong>43.9</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.2</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-0">
+              <td>19</td>
+              <td>delay_0</td>
+              <td class="timing-cols"><strong>0.0</strong></td>
+              <td class="timing-cols"><strong>6.0</strong></td>
+              <td class="timing-cols"><strong>6.0</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>0.8</td>
+              <td class="class-col cls-after"><strong>Button_After_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>False</td>
+            </tr>
+            <tr class="control">
+              <td>20</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-200">
+              <td>21</td>
+              <td>delay_200</td>
+              <td class="timing-cols"><strong>200.0</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.1</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>22</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.5</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>23</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>0.8</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>24</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>0.9</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>25</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>0.8</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>26</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.1</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-50">
+              <td>27</td>
+              <td>delay_50</td>
+              <td class="timing-cols"><strong>50.0</strong></td>
+              <td class="timing-cols"><strong>138.9</strong></td>
+              <td class="timing-cols"><strong>88.9</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.3</td>
+              <td class="class-col cls-after"><strong>Button_After_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>False</td>
+            </tr>
+            <tr class="delay-250">
+              <td>28</td>
+              <td>delay_250</td>
+              <td class="timing-cols"><strong>250.0</strong></td>
+              <td class="timing-cols"><strong>274.9</strong></td>
+              <td class="timing-cols"><strong>24.9</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.5</td>
+              <td class="class-col cls-after"><strong>Button_After_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>False</td>
+            </tr>
+            <tr class="delay-0">
+              <td>29</td>
+              <td>delay_0</td>
+              <td class="timing-cols"><strong>0.0</strong></td>
+              <td class="timing-cols"><strong>6.0</strong></td>
+              <td class="timing-cols"><strong>6.0</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.3</td>
+              <td class="class-col cls-after"><strong>Button_After_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>False</td>
+            </tr>
+            <tr class="delay-150">
+              <td>30</td>
+              <td>delay_150</td>
+              <td class="timing-cols"><strong>150.0</strong></td>
+              <td class="timing-cols"><strong>276.9</strong></td>
+              <td class="timing-cols"><strong>126.9</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.1</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>31</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.5</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>32</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>33</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-50">
+              <td>34</td>
+              <td>delay_50</td>
+              <td class="timing-cols"><strong>50.0</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="emg-flag">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>35</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>36</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-50">
+              <td>37</td>
+              <td>delay_50</td>
+              <td class="timing-cols"><strong>50.0</strong></td>
+              <td class="timing-cols"><strong>160.0</strong></td>
+              <td class="timing-cols"><strong>110.0</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>0.9</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-250">
+              <td>38</td>
+              <td>delay_250</td>
+              <td class="timing-cols"><strong>250.0</strong></td>
+              <td class="timing-cols"><strong>263.9</strong></td>
+              <td class="timing-cols"><strong>13.9</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-100">
+              <td>39</td>
+              <td>delay_100</td>
+              <td class="timing-cols"><strong>100.0</strong></td>
+              <td class="timing-cols"><strong>137.9</strong></td>
+              <td class="timing-cols"><strong>37.9</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.2</td>
+              <td class="class-col cls-after"><strong>Button_After_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>False</td>
+            </tr>
+            <tr class="control">
+              <td>40</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>0.8</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+          </table>
+        </div>
+        <div class="block">
+          <div class="block-header">Block 5 — 40 Trials</div>
+          <table class="trials-table">
+            <tr>
+              <th>Trial</th><th>Condition</th>
+              <th>Assigned Delay (ms)</th>
+              <th>Actual Delay (ms)</th>
+              <th>Timing Error (ms)</th>
+              <th>Button</th><th>Response</th><th>RT (ms)</th>
+              <th>Classification</th><th>EMG</th><th>Flip</th><th>Accuracy</th>
+            </tr>
+            
+            <tr class="delay-0">
+              <td>1</td>
+              <td>delay_0</td>
+              <td class="timing-cols"><strong>0.0</strong></td>
+              <td class="timing-cols"><strong>7.0</strong></td>
+              <td class="timing-cols"><strong>7.0</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>2</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.3</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-200">
+              <td>3</td>
+              <td>delay_200</td>
+              <td class="timing-cols"><strong>200.0</strong></td>
+              <td class="timing-cols"><strong>270.9</strong></td>
+              <td class="timing-cols"><strong>70.9</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.2</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-100">
+              <td>4</td>
+              <td>delay_100</td>
+              <td class="timing-cols"><strong>100.0</strong></td>
+              <td class="timing-cols"><strong>137.9</strong></td>
+              <td class="timing-cols"><strong>37.9</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.4</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>5</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.3</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-250">
+              <td>6</td>
+              <td>delay_250</td>
+              <td class="timing-cols"><strong>250.0</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">T</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>7</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>0.9</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-50">
+              <td>8</td>
+              <td>delay_50</td>
+              <td class="timing-cols"><strong>50.0</strong></td>
+              <td class="timing-cols"><strong>137.9</strong></td>
+              <td class="timing-cols"><strong>87.9</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.3</td>
+              <td class="class-col cls-after"><strong>Button_After_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>False</td>
+            </tr>
+            <tr class="control">
+              <td>9</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.1</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>10</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.3</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>11</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.4</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-150">
+              <td>12</td>
+              <td>delay_150</td>
+              <td class="timing-cols"><strong>150.0</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="emg-flag">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-50">
+              <td>13</td>
+              <td>delay_50</td>
+              <td class="timing-cols"><strong>50.0</strong></td>
+              <td class="timing-cols"><strong>136.9</strong></td>
+              <td class="timing-cols"><strong>86.9</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>0.9</td>
+              <td class="class-col cls-after"><strong>Button_After_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>False</td>
+            </tr>
+            <tr class="control">
+              <td>14</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-50">
+              <td>15</td>
+              <td>delay_50</td>
+              <td class="timing-cols"><strong>50.0</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="emg-flag">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-100">
+              <td>16</td>
+              <td>delay_100</td>
+              <td class="timing-cols"><strong>100.0</strong></td>
+              <td class="timing-cols"><strong>133.9</strong></td>
+              <td class="timing-cols"><strong>33.9</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-0">
+              <td>17</td>
+              <td>delay_0</td>
+              <td class="timing-cols"><strong>0.0</strong></td>
+              <td class="timing-cols"><strong>7.0</strong></td>
+              <td class="timing-cols"><strong>7.0</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.3</td>
+              <td class="class-col cls-after"><strong>Button_After_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>False</td>
+            </tr>
+            <tr class="control">
+              <td>18</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>19</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>20</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>0.9</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>21</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.4</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>22</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.0</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-50">
+              <td>23</td>
+              <td>delay_50</td>
+              <td class="timing-cols"><strong>50.0</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="emg-flag">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-200">
+              <td>24</td>
+              <td>delay_200</td>
+              <td class="timing-cols"><strong>200.0</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="emg-flag">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-150">
+              <td>25</td>
+              <td>delay_150</td>
+              <td class="timing-cols"><strong>150.0</strong></td>
+              <td class="timing-cols"><strong>270.9</strong></td>
+              <td class="timing-cols"><strong>120.9</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>26</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-150">
+              <td>27</td>
+              <td>delay_150</td>
+              <td class="timing-cols"><strong>150.0</strong></td>
+              <td class="timing-cols"><strong>265.9</strong></td>
+              <td class="timing-cols"><strong>115.9</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.0</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>28</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.4</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>29</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-250">
+              <td>30</td>
+              <td>delay_250</td>
+              <td class="timing-cols"><strong>250.0</strong></td>
+              <td class="timing-cols"><strong>267.9</strong></td>
+              <td class="timing-cols"><strong>17.9</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>0.9</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>31</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.3</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-250">
+              <td>32</td>
+              <td>delay_250</td>
+              <td class="timing-cols"><strong>250.0</strong></td>
+              <td class="timing-cols"><strong>268.9</strong></td>
+              <td class="timing-cols"><strong>18.9</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.3</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>33</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.4</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>34</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.2</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-200">
+              <td>35</td>
+              <td>delay_200</td>
+              <td class="timing-cols"><strong>200.0</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>0.8</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-0">
+              <td>36</td>
+              <td>delay_0</td>
+              <td class="timing-cols"><strong>0.0</strong></td>
+              <td class="timing-cols"><strong>7.0</strong></td>
+              <td class="timing-cols"><strong>7.0</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>0.9</td>
+              <td class="class-col cls-after"><strong>Button_After_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>False</td>
+            </tr>
+            <tr class="delay-0">
+              <td>37</td>
+              <td>delay_0</td>
+              <td class="timing-cols"><strong>0.0</strong></td>
+              <td class="timing-cols"><strong>7.0</strong></td>
+              <td class="timing-cols"><strong>7.0</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>38</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.4</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>39</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.3</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-100">
+              <td>40</td>
+              <td>delay_100</td>
+              <td class="timing-cols"><strong>100.0</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="emg-flag">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+          </table>
+        </div>
+        <div class="block">
+          <div class="block-header">Block 6 — 40 Trials</div>
+          <table class="trials-table">
+            <tr>
+              <th>Trial</th><th>Condition</th>
+              <th>Assigned Delay (ms)</th>
+              <th>Actual Delay (ms)</th>
+              <th>Timing Error (ms)</th>
+              <th>Button</th><th>Response</th><th>RT (ms)</th>
+              <th>Classification</th><th>EMG</th><th>Flip</th><th>Accuracy</th>
+            </tr>
+            
+            <tr class="control">
+              <td>1</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.3</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>2</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>0.9</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>3</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.0</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-200">
+              <td>4</td>
+              <td>delay_200</td>
+              <td class="timing-cols"><strong>200.0</strong></td>
+              <td class="timing-cols"><strong>263.9</strong></td>
+              <td class="timing-cols"><strong>63.9</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.3</td>
+              <td class="class-col cls-after"><strong>Button_After_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>False</td>
+            </tr>
+            <tr class="control">
+              <td>5</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.3</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-250">
+              <td>6</td>
+              <td>delay_250</td>
+              <td class="timing-cols"><strong>250.0</strong></td>
+              <td class="timing-cols"><strong>267.9</strong></td>
+              <td class="timing-cols"><strong>17.9</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-200">
+              <td>7</td>
+              <td>delay_200</td>
+              <td class="timing-cols"><strong>200.0</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="emg-flag">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-50">
+              <td>8</td>
+              <td>delay_50</td>
+              <td class="timing-cols"><strong>50.0</strong></td>
+              <td class="timing-cols"><strong>135.9</strong></td>
+              <td class="timing-cols"><strong>85.9</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>0.9</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>9</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.2</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-250">
+              <td>10</td>
+              <td>delay_250</td>
+              <td class="timing-cols"><strong>250.0</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.2</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>11</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.0</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-200">
+              <td>12</td>
+              <td>delay_200</td>
+              <td class="timing-cols"><strong>200.0</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="emg-flag">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-0">
+              <td>13</td>
+              <td>delay_0</td>
+              <td class="timing-cols"><strong>0.0</strong></td>
+              <td class="timing-cols"><strong>8.0</strong></td>
+              <td class="timing-cols"><strong>8.0</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.2</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-150">
+              <td>14</td>
+              <td>delay_150</td>
+              <td class="timing-cols"><strong>150.0</strong></td>
+              <td class="timing-cols"><strong>276.9</strong></td>
+              <td class="timing-cols"><strong>126.9</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.4</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-50">
+              <td>15</td>
+              <td>delay_50</td>
+              <td class="timing-cols"><strong>50.0</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="emg-flag">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>16</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.2</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>17</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.1</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>18</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>19</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>0.9</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-50">
+              <td>20</td>
+              <td>delay_50</td>
+              <td class="timing-cols"><strong>50.0</strong></td>
+              <td class="timing-cols"><strong>144.9</strong></td>
+              <td class="timing-cols"><strong>94.9</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.0</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-0">
+              <td>21</td>
+              <td>delay_0</td>
+              <td class="timing-cols"><strong>0.0</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="emg-flag">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-0">
+              <td>22</td>
+              <td>delay_0</td>
+              <td class="timing-cols"><strong>0.0</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="emg-flag">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>23</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.3</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>24</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.2</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-250">
+              <td>25</td>
+              <td>delay_250</td>
+              <td class="timing-cols"><strong>250.0</strong></td>
+              <td class="timing-cols"><strong>267.9</strong></td>
+              <td class="timing-cols"><strong>17.9</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.2</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-100">
+              <td>26</td>
+              <td>delay_100</td>
+              <td class="timing-cols"><strong>100.0</strong></td>
+              <td class="timing-cols"><strong>134.9</strong></td>
+              <td class="timing-cols"><strong>34.9</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.2</td>
+              <td class="class-col cls-after"><strong>Button_After_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>False</td>
+            </tr>
+            <tr class="control">
+              <td>27</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.5</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>28</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>29</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>0.9</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-150">
+              <td>30</td>
+              <td>delay_150</td>
+              <td class="timing-cols"><strong>150.0</strong></td>
+              <td class="timing-cols"><strong>266.9</strong></td>
+              <td class="timing-cols"><strong>116.9</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.4</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>31</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.2</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-100">
+              <td>32</td>
+              <td>delay_100</td>
+              <td class="timing-cols"><strong>100.0</strong></td>
+              <td class="timing-cols"><strong>138.9</strong></td>
+              <td class="timing-cols"><strong>38.9</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.3</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-100">
+              <td>33</td>
+              <td>delay_100</td>
+              <td class="timing-cols"><strong>100.0</strong></td>
+              <td class="timing-cols"><strong>136.9</strong></td>
+              <td class="timing-cols"><strong>36.9</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.3</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>34</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.3</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>35</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="control">
+              <td>36</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>F</td>
+              <td>nan</td>
+              <td>–</td>
+              <td class="class-col cls-none"><strong>No_Response</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>nan</td>
+            </tr>
+            <tr class="delay-50">
+              <td>37</td>
+              <td>delay_50</td>
+              <td class="timing-cols"><strong>50.0</strong></td>
+              <td class="timing-cols"><strong>135.9</strong></td>
+              <td class="timing-cols"><strong>85.9</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>0.9</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>True</td>
+            </tr>
+            <tr class="control">
+              <td>38</td>
+              <td>control</td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td class="timing-cols"><strong>No_Flip</strong></td>
+              <td class="timing-cols"><strong>n/a</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.4</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">F</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-150">
+              <td>39</td>
+              <td>delay_150</td>
+              <td class="timing-cols"><strong>150.0</strong></td>
+              <td class="timing-cols"><strong>266.9</strong></td>
+              <td class="timing-cols"><strong>116.9</strong></td>
+              <td>T</td>
+              <td>right</td>
+              <td>1.0</td>
+              <td class="class-col cls-before"><strong>Button_Before_Flip</strong></td>
+              <td class="">T</td>
+              <td>F</td>
+              <td>True</td>
+            </tr>
+            <tr class="delay-0">
+              <td>40</td>
+              <td>delay_0</td>
+              <td class="timing-cols"><strong>0.0</strong></td>
+              <td class="timing-cols"><strong>6.0</strong></td>
+              <td class="timing-cols"><strong>6.0</strong></td>
+              <td>T</td>
+              <td>left</td>
+              <td>1.0</td>
+              <td class="class-col cls-after"><strong>Button_After_Flip</strong></td>
+              <td class="">T</td>
+              <td>T</td>
+              <td>False</td>
+            </tr>
+          </table>
+        </div>
+
+<script>
+function toggleCharts(){
+  const c = document.getElementById('chartsContainer');
+  c.classList.toggle('show');
+  const b = document.querySelector('.toggle-button');
+  b.textContent = c.classList.contains('show') ? 'Hide Interactive Charts' : 'Show Interactive Charts';
+}
+
+const condLabels = ["control", "delay_0", "delay_50", "delay_100", "delay_150", "delay_200", "delay_250"];
+const condAbs = {"control": {"b": 81, "a": 0, "n": 39, "t": 120}, "delay_0": {"b": 2, "a": 12, "n": 10, "t": 24}, "delay_50": {"b": 12, "a": 3, "n": 9, "t": 24}, "delay_100": {"b": 8, "a": 4, "n": 6, "t": 18}, "delay_150": {"b": 13, "a": 2, "n": 3, "t": 18}, "delay_200": {"b": 4, "a": 3, "n": 11, "t": 18}, "delay_250": {"b": 7, "a": 3, "n": 8, "t": 18}};
+const condBeforePct = [67.5, 8.3, 50.0, 44.4, 72.2, 22.2, 38.9];
+const condAfterPct  = [0.0, 50.0, 12.5, 22.2, 11.1, 16.7, 16.7];
+const condNonePct   = [32.5, 41.7, 37.5, 33.3, 16.7, 61.1, 44.4];
+
+new Chart(document.getElementById('condChart').getContext('2d'), {
+  type: 'bar',
+  data: {
+    labels: condLabels,
+    datasets: [
+      { label: 'Button Before Flip', data: condBeforePct, backgroundColor:'#4CAF50', borderColor:'#388E3C', borderWidth:1 },
+      { label: 'Button After Flip',  data: condAfterPct,  backgroundColor:'#F44336', borderColor:'#C62828', borderWidth:1 },
+      { label: 'No Response',        data: condNonePct,   backgroundColor:'#9E9E9E', borderColor:'#616161', borderWidth:1 }
+    ]
+  },
+  options: {
+    responsive: true,
+    scales: {
+      y: { beginAtZero:true, max:100, title:{display:true, text:'Percentage (%)'} },
+      x: { title:{display:true, text:'Assigned Delay Conditions'} }
+    },
+    plugins: {
+      title: { display:true, text:'Response Classification by Assigned Delay Conditions (Percent)' },
+      tooltip: {
+        callbacks: {
+          label: function(ctx){
+            const lab = ctx.dataset.label;
+            const cond = ctx.label;
+            const pct = ctx.parsed.y.toFixed(1);
+            const abs = condAbs[cond];
+            const key = (lab === 'Button Before Flip') ? 'b' : (lab === 'Button After Flip' ? 'a' : 'n');
+            return lab + ': ' + pct + '% (' + abs[key] + ' / ' + abs.t + ')';
+          }
+        }
+      }
+    }
+  }
+});
+
+const clusLabels = ["~6ms Cluster (delay_0)", "~140ms Cluster (delay_50,100)", "~260ms Cluster (delay_150,200,250)"];
+const clusKeys   = ["cluster_6", "cluster_140", "cluster_260"];
+const clusAbs    = {"cluster_6": {"b": 2, "a": 12, "n": 6, "t": 20}, "cluster_140": {"b": 21, "a": 7, "n": 7, "t": 35}, "cluster_260": {"b": 20, "a": 8, "n": 8, "t": 36}};
+const clusBeforePct = [10.0, 60.0, 55.6];
+const clusAfterPct  = [60.0, 20.0, 22.2];
+const clusNonePct   = [30.0, 20.0, 22.2];
+
+new Chart(document.getElementById('clusChart').getContext('2d'), {
+  type: 'bar',
+  data: {
+    labels: clusLabels,
+    datasets: [
+      { label: 'Button Before Flip', data: clusBeforePct, backgroundColor:'#4CAF50', borderColor:'#388E3C', borderWidth:1 },
+      { label: 'Button After Flip',  data: clusAfterPct,  backgroundColor:'#F44336', borderColor:'#C62828', borderWidth:1 },
+      { label: 'No Response',        data: clusNonePct,   backgroundColor:'#9E9E9E', borderColor:'#616161', borderWidth:1 }
+    ]
+  },
+  options: {
+    responsive: true,
+    scales: {
+      y: { beginAtZero:true, max:100, title:{display:true, text:'Percentage (%)'} },
+      x: { title:{display:true, text:'Actual Delay Clusters'} }
+    },
+    plugins: {
+      title: { display:true, text:'Response Classification by Actual Delay Clusters (Percent)' },
+      tooltip: {
+        callbacks: {
+          label: function(ctx){
+            const lab = ctx.dataset.label;
+            const i = ctx.dataIndex;
+            const key = clusKeys[i];
+            const pct = ctx.parsed.y.toFixed(1);
+            const abs = clusAbs[key];
+            const k = (lab === 'Button Before Flip') ? 'b' : (lab === 'Button After Flip' ? 'a' : 'n');
+            return lab + ': ' + pct + '% (' + abs[k] + ' / ' + abs.t + ')';
+          }
+        }
+      }
+    }
+  }
+});
+</script>
+
+</body>
+</html>
